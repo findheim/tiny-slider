@@ -194,13 +194,13 @@ export interface TinySliderSettings extends CommonOptions {
      */
     nextButton?: HTMLElement | string | false;
     /**
-     * Customized previous buttons. 
+     * Customized previous buttons.
      * This option will be ignored if controlsContainer is a Node element or a CSS selector.
      * @defaultValue false
      */
     prevButton?: HTMLElement | string | false;
     /**
-     * Customized next buttons. 
+     * Customized next buttons.
      * This option will be ignored if controlsContainer is a Node element or a CSS selector.
      * @defaultValue false
      */
@@ -242,6 +242,8 @@ export interface TinySliderSettings extends CommonOptions {
      * @defaultValue false
      */
     onInit?: () => void | false;
+
+    loadPrevNext?: number;
 }
 
 export interface TinySliderInfo {

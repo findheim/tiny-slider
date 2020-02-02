@@ -107,6 +107,7 @@ export var tns = function(options) {
     preventScrollOnTouch: false,
     freezable: true,
     onInit: false,
+    loadPrevNext: 0,
     useLocalStorage: true
   }, options || {});
 
@@ -287,6 +288,7 @@ export var tns = function(options) {
       sheet = createStyleSheet(),
       lazyload = options.lazyload,
       lazyloadSelector = options.lazyloadSelector,
+      loadPrevNext = getOption('loadPrevNext'),
       slidePositions, // collection of slide positions
       slideItemsOut = [],
       cloneCount = loop ? getCloneCountForLoop() : 0,
@@ -1784,7 +1786,7 @@ export var tns = function(options) {
       var arg = getVisibleSlideRange();
       arg.push(lazyloadSelector);
 
-      getImageArray.apply(null, arg).forEach(function (img) {
+      getImageArrayForLazy.apply(null, arg).forEach(function (img) {
         if (!hasClass(img, imgCompleteClass)) {
           // stop propagation transitionend event to container
           var eve = {};
@@ -1836,6 +1838,24 @@ export var tns = function(options) {
 
     while (start <= end) {
       forEach(slideItems[start].querySelectorAll(imgSelector), function (img) { imgs.push(img); });
+      start++;
+    }
+
+    return imgs;
+  }
+
+  function getImageArrayForLazy (start, end) {
+    if ((start - loadPrevNext) >= 0) {
+      start = start - loadPrevNext;
+    }
+
+    if (slideItems.length > (end + loadPrevNext)) {
+      end = end + loadPrevNext;
+    }
+
+    var imgs = [];
+    while (start <= end  ) {
+      forEach(slideItems[start].querySelectorAll('img'), function (img) { imgs.push(img); });
       start++;
     }
 
