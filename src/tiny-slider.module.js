@@ -1787,12 +1787,14 @@ export var tns = function(options) {
       arg.push(lazyloadSelector);
 
       getImageArrayForLazy.apply(null, arg).forEach(function (img) {
-        if (!hasClass(img, imgCompleteClass)) {
+        var isPictureElem = isPicture(img);
+
+        if (!isPictureElem && !hasClass(img, imgCompleteClass)) {
           // stop propagation transitionend event to container
           var eve = {};
           eve[TRANSITIONEND] = function (e) { e.stopPropagation(); };
-          addEvents(img, eve);
 
+          addEvents(img, eve);
           addEvents(img, imgEvents);
 
           // update src
@@ -1801,6 +1803,26 @@ export var tns = function(options) {
           // update srcset
           var srcset = getAttr(img, 'data-srcset');
           if (srcset) { img.srcset = srcset; }
+
+          addClass(img, 'loading');
+        }
+
+        if (isPictureElem) {
+          var eve = {};
+          eve[TRANSITIONEND] = function (e) { e.stopPropagation(); };
+
+          addEvents(img, eve);
+          addEvents(img, imgEvents);
+
+          forEach(img.getElementsByTagName('source'), function (source) {
+            var dataSrc = getAttr(source, 'data-srcset');
+
+            if (dataSrc) {
+                setAttrs(source, {'srcset': dataSrc});
+
+                removeAttrs(source, 'data-srcset');
+            }
+          });
 
           addClass(img, 'loading');
         }
@@ -1834,7 +1856,7 @@ export var tns = function(options) {
 
   function getImageArray (start, end, imgSelector) {
     var imgs = [];
-    if (!imgSelector) { imgSelector = 'img'; }
+    if (!imgSelector) { imgSelector = 'img,picture>source'; }
 
     while (start <= end) {
       forEach(slideItems[start].querySelectorAll(imgSelector), function (img) { imgs.push(img); });
@@ -1844,7 +1866,9 @@ export var tns = function(options) {
     return imgs;
   }
 
-  function getImageArrayForLazy (start, end) {
+  function getImageArrayForLazy (start, end, imgSelector) {
+    if (!imgSelector) { imgSelector = 'img,picture>source'; }
+
     if ((start - loadPrevNext) >= 0) {
       start = start - loadPrevNext;
     }
@@ -1855,7 +1879,7 @@ export var tns = function(options) {
 
     var imgs = [];
     while (start <= end  ) {
-      forEach(slideItems[start].querySelectorAll('img'), function (img) { imgs.push(img); });
+      forEach(slideItems[start].querySelectorAll(imgSelector), function (img) { imgs.push(img); });
       start++;
     }
 
@@ -2027,6 +2051,10 @@ export var tns = function(options) {
 
   function isButton (el) {
     return getLowerCaseNodeName(el) === 'button';
+  }
+
+  function isPicture (el) {
+    return getLowerCaseNodeName(el) === 'picture';
   }
 
   function isAriaDisabled (el) {
@@ -2340,6 +2368,8 @@ export var tns = function(options) {
 
   // on controls click
   function onControlsClick (e, dir) {
+    e.preventDefault();
+
     if (running) {
       if (preventActionWhenRunning) { return; } else { onTransitionEnd(); }
     }
@@ -2374,6 +2404,8 @@ export var tns = function(options) {
       // pass e when click control buttons or keydown
       render((passEventObject || (e && e.type === 'keydown')) ? e : null);
     }
+
+    return false;
   }
 
   // on nav click
