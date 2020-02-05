@@ -1,3 +1,3 @@
 export function showElement(el, forceHide) {
-  if (el.style.display === 'none') { el.style.display = ''; }
+  if (el && el.style.display === 'none') { el.style.display = ''; }
 }
