@@ -810,6 +810,10 @@ var tns = function(options) {
         'load': onImgLoaded,
         'error': onImgFailed
       },
+      pictureImgEvents = {
+        'load': onPictureImgLoaded,
+        'error': onPictureImgFailed
+      },
       imgsComplete,
       liveregionCurrent,
       preventScroll = options.preventScrollOnTouch === 'force' ? true : false;
@@ -2240,19 +2244,22 @@ var tns = function(options) {
         }
 
         if (isPictureElem) {
+          var pictureImg = img.querySelector('img');
           var eve = {};
           eve[TRANSITIONEND] = function (e) { e.stopPropagation(); };
 
+          // picture elem
           addEvents(img, eve);
-          addEvents(img, imgEvents);
+          // img inside picture elem
+          addEvents(pictureImg, pictureImgEvents);
 
           forEach(img.getElementsByTagName('source'), function (source) {
             var dataSrc = getAttr(source, 'data-srcset');
 
             if (dataSrc) {
-                setAttrs(source, {'srcset': dataSrc});
+              setAttrs(source, {'srcset': dataSrc});
 
-                removeAttrs(source, 'data-srcset');
+              removeAttrs(source, 'data-srcset');
             }
           });
 
@@ -2284,6 +2291,45 @@ var tns = function(options) {
     addClass(img, imgCompleteClass);
     removeClass(img, 'loading');
     removeEvents(img, imgEvents);
+  }
+
+  function onPictureImgLoaded (e) {
+    imgPictureLoaded(getTarget(e));
+  }
+
+  function onPictureImgFailed (e) {
+    imgPictureFailed(getTarget(e));
+  }
+
+  function imgPictureLoaded (img) {
+    var picture = img.parentNode;
+
+    if (picture) {
+      addClass(picture, 'loaded');
+    }
+    imgPictureCompleted(img);
+  }
+
+  function imgPictureFailed (img) {
+    var picture = img.parentNode;
+
+    if (picture) {
+      addClass(picture, 'failed');
+    }
+
+
+    imgPictureCompleted(img);
+  }
+
+  function imgPictureCompleted (img) {
+    var picture = img.parentNode;
+
+    if (picture) {
+      addClass(picture, imgCompleteClass);
+      removeClass(picture, 'loading');
+    }
+
+    removeEvents(img, pictureImgEvents);
   }
 
   function getImageArray (start, end, imgSelector) {
@@ -2837,6 +2883,7 @@ var tns = function(options) {
       // pass e when click control buttons or keydown
       render((passEventObject || (e && e.type === 'keydown')) ? e : null);
     }
+
 
     return false;
   }
