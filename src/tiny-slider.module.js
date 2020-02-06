@@ -2368,7 +2368,8 @@ export var tns = function(options) {
 
   // on controls click
   function onControlsClick (e, dir) {
-    e.preventDefault();
+    preventDefaultBehavior(e);
+    e.stopPropagation();
 
     if (running) {
       if (preventActionWhenRunning) { return; } else { onTransitionEnd(); }
